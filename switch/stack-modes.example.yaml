@@ -1,0 +1,23 @@
+# stack-modes.yaml — copy to stack-modes.yaml and edit. Keep it flat: scalars + one level of modes.
+head: user@node-a            # SSH target of the head node (rank 0)
+worker: user@node-b          # SSH target of the worker (rank 1)
+api: 10.0.0.1                # address clients use for the API (head node)
+port: 8899                   # the single API port every mode must expose
+served_name: deepseek-v4-flash-vision-exp
+prod: eugr                   # what `stack-mode.sh prod` starts
+proxy_start: "python3 ~/tier_proxy.py"          # optional: thinking-tier proxy started after the port is up
+proxy_kill: "pkill -f tier_proxy.py"            # optional: how stop_all kills it
+
+modes:
+  anemll:
+    container: deepseek-v4-flash-vllm-dspark-1
+    start: "cd ~/DeepSeek-v4-Flash-DSpark-2x-DGX-Spark && ./start-deepseek-v4-flash-dspark.sh --host 0.0.0.0 --port 8899"
+    stop: "cd ~/DeepSeek-v4-Flash-DSpark-2x-DGX-Spark && ./stop-deepseek-v4-flash-dspark.sh"
+  eugr:
+    container: vllm-eugr-dsv4f
+    start: "cd ~/spark-vllm-docker && python3 run-recipe.py recipes/deepseek-v4-flash-vision-exp.yaml --port 8899 --max-model-len 1048320 -d -- --served-model-name deepseek-v4-flash-vision-exp deepseek-ai/DeepSeek-V4-Flash-Vision-Exp"
+    stop: ""
+  ollie:
+    container: vision_exp
+    start: "cd ~/ollie-gb10-serving-stacks && PATH=$HOME/.local/bin:$PATH ./vision-exp-stack up"
+    stop: "cd ~/ollie-gb10-serving-stacks && ./vision-exp-stack down"

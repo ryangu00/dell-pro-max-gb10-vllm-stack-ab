@@ -15,7 +15,7 @@ Measured 2026-09-16/17. All numbers are single-stream unless stated. "cold prefi
 | K2 safety warnings | 1 · 1 | 2 | 3, 2 | — |
 | K3① vision OCR /50 | N/A (text-only models) | **engine hung on image #1** (NCCL collective timeout, `/health` still 200) | **50/50** | — |
 | K3② 6-stream SVG parsed /6 | 27B: 5/6 · 0731: 6/6 (377 s wall, serialised) | not reached | 6/6 (108 s wall) | — |
-| KV-cache pool (tokens) | n/a (single-seat 384 K on node B) | **2,337,475** | 1,184,211 at `--gpu-memory-utilization 0.85` (recipe default); **1,499,086** at 0.87, which is what we run now (see pitfalls #12) | — |
+| KV-cache pool (tokens) | n/a (single-seat 384 K on node B) | **2,337,475** | 1,184,211 at `--gpu-memory-utilization 0.85` (recipe default); **1,499,086** at 0.87, which is what we ran from 2026-09-17; since 2026-09-26 production on this tier is a single-node engine and this stack is kept as a rollback tier (see the [Update (2026-10) section](../README.md#update-2026-10)) | — |
 | prefix cache | — | never hit in our runs (fix merged upstream 09-03, never released) | hits from 2nd request | — |
 | boot, warm weights | ~10 min (EXL3 single seat) | 3–5 min | 3 min | **never booted** (7 attempts across two rounds; see below) |
 

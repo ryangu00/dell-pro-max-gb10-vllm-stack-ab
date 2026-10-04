@@ -1,6 +1,6 @@
 # Decision rule for a serving-stack A/B
 
-Written before the challenger boots, reviewed by an independent model, then frozen for that round. Changing the rule after seeing numbers is the failure mode this document exists to prevent — so we also record how the rule *changed between rounds*, because it did.
+Written before the challenger boots, independently reviewed, then frozen for that round. Changing the rule after seeing numbers is the failure mode this document exists to prevent — so we also record how the rule *changed between rounds*, because it did.
 
 ## How the rule evolved (honest history)
 

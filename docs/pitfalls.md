@@ -1,4 +1,4 @@
-# Pitfalls (all firsthand, 2026-09-16/17, two GB10 nodes, TP2 over RoCE)
+# Pitfalls (firsthand, 2026-09-16/17 unless dated otherwise, two GB10 nodes, TP2 over RoCE)
 
 Each one cost us at least one production window. Ordered by how much time it burned.
 
@@ -45,6 +45,8 @@ Clients configured with a short alias get 404. Pass both: `--served-model-name <
 
 After an NCCL collective timeout rank 0 hangs; `/health` stays green; every request times out. We watched this for ten minutes on a live production endpoint before restarting it. Liveness must be a real generation (`max_tokens: 8`, non-empty content), not `/health` — `switch/stack-mode.sh` does exactly that.
 
+We saw it a second time, on the winning stack, during a tensor-parallel hang with no error in the log at the onset (2026-09-25; see the [Update (2026-10) section](../README.md#update-2026-10)): the engine had stopped producing tokens and the health endpoint still said 200. That health behavior is recorded in incident notes; no per-minute health samples were saved.
+
 ## 9. `vllm serve --help` prints nothing inside `docker run` without a GPU
 
 We concluded a flag did not exist. It did. To check a flag in an image, grep the source (`vllm/config/load.py`, `vllm/engine/arg_utils.py`) instead.
@@ -61,7 +63,7 @@ A recipe's in-container `hf-download` wrote the model directory as root. The nex
 
 The eugr recipe at `--gpu-memory-utilization 0.85` booted fine three times, then twice in a row died with `ValueError: To serve at least one request with the model's max seq len (1048320), 10.06 GiB KV cache is needed, which is larger than the available KV cache memory (9.6 GiB)`. `free` showed 4 GB used on the node. The CUDA-side free figure vLLM profiles against had shrunk by ~2 GiB after seven container start/stop cycles — the same allocator-not-returning behaviour a forum post describes for this platform.
 
-- Fix that worked immediately: `--gpu-memory-utilization 0.87` (the value the other community stacks use; the platform ceiling is about 0.877). Side effect: the KV pool went from 1,184,211 to 1,499,086 tokens. We keep 0.87.
+- Fix that worked immediately: `--gpu-memory-utilization 0.87` (the value the other community stacks use; the platform ceiling is about 0.877). Side effect: the KV pool went from 1,184,211 to 1,499,086 tokens. We used 0.87 from 2026-09-17; this stack has been a rollback tier since 2026-09-26.
 - Your switch script must read the container log for `ValueError` / `died unexpectedly`, not just wait for the port; ours waited 25 minutes for a port that was never coming, twice.
 
 ## 13. Your own probe can look like a stack bug
